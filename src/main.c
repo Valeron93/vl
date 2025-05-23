@@ -1,26 +1,51 @@
 #include <stdio.h>
 
+#include "lexer.h"
 #include "list.h"
 
-typedef struct {
-    int* items;
-    size_t capacity;
-    size_t length;
-} int_list;
+bool read_all_file(const char* path, char** data, size_t* data_size)
+{
+    FILE* file = fopen(path, "rb");
+
+    if (file == NULL) {
+        return false;
+    }
+
+    fseek(file, 0, SEEK_END);
+    *data_size = ftell(file);
+    *data = (char*)malloc(*data_size);
+    fseek(file, 0, SEEK_SET);
+
+    fread(*data, *data_size, 1, file);
+    fclose(file);
+
+    return true;
+}
 
 int main()
 {
-    int_list list = { 0 };
-    for (int i = 0; i < 100000; i++) {
-        vl_list_append(&list, i);
+    const char* path = "./test.vl";
+
+    char* src = NULL;
+    size_t src_size = 0;
+
+    if (!read_all_file(path, &src, &src_size)) {
+        fprintf(stderr, "failed to read file: %s\n", path);
+        return 1;
     }
 
-    printf("length: %zu\n", list.length);
-    printf("capacity: %zu\n", list.capacity);
+    vl_lexer_t lexer = { 0 };
+    vl_lex_init(&lexer, path, src, src_size);
 
-    vl_list_free(&list);
+    if (!vl_lex_scan_all(&lexer)) {
+        vl_lex_free(&lexer);
+        fprintf(stderr, "lexer failed\n");
+        return 1;
+    }
 
-    printf("length: %zu\n", list.length);
-    printf("capacity: %zu\n", list.capacity);
-    printf("items: %p\n", list.items);
+    for (int i = 0; i < lexer.tokens.length - 1; i++) {
+        printf("%.*s\n", (int)lexer.tokens.items[i].lexeme_length, lexer.tokens.items[i].lexeme);
+    }
+
+    vl_lex_free(&lexer);
 }
