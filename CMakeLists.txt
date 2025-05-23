@@ -4,6 +4,10 @@ project(vl LANGUAGES C)
 
 add_executable(vl 
     "src/main.c"
+    "src/lexer.h"
+    "src/lexer.c"
+    "src/list.h"
+    "src/list.c"
 )
 
 set_target_properties(vl PROPERTIES
