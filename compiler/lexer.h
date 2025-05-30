@@ -38,7 +38,7 @@ typedef struct {
             const char* str;
             size_t len;
         } string_value;
-    };
+    } value;
 } vl_token_t;
 
 typedef struct {

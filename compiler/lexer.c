@@ -34,7 +34,7 @@ char vl_lex_advance(vl_lexer_t* l)
 
 bool vl_lex_is_end(vl_lexer_t* l)
 {
-    return l->current >= l->source_length;
+    return (size_t)l->current >= l->source_length;
 }
 
 char vl_lex_peek(vl_lexer_t* l)
@@ -47,7 +47,7 @@ char vl_lex_peek(vl_lexer_t* l)
 
 char vl_lex_peek_next(vl_lexer_t* l)
 {
-    if (l->current + 1 >= l->source_length) {
+    if ((size_t)l->current + 1 >= l->source_length) {
         return '\0';
     }
 
@@ -157,6 +157,8 @@ bool vl_lex_match(vl_lexer_t* l, char c)
 
 void vl_lex_err(vl_lexer_t* l, const char* errmsg)
 {
+    (void)l;
+    (void)errmsg;
 }
 
 bool vl_is_digit(char c)

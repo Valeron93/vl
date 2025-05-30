@@ -1,0 +1,8 @@
+    push.d 1
+
+label again:
+    push.d 1
+    add
+    dup
+    dbg.print
+    jmp again

@@ -38,14 +38,16 @@ int main()
     vl_lex_init(&lexer, path, src, src_size);
 
     if (!vl_lex_scan_all(&lexer)) {
+        free(src);
         vl_lex_free(&lexer);
         fprintf(stderr, "lexer failed\n");
         return 1;
     }
 
-    for (int i = 0; i < lexer.tokens.length - 1; i++) {
+    for (size_t i = 0; i < lexer.tokens.length - 1; i++) {
         printf("%.*s\n", (int)lexer.tokens.items[i].lexeme_length, lexer.tokens.items[i].lexeme);
     }
 
+    free(src);
     vl_lex_free(&lexer);
 }
