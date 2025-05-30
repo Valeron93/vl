@@ -16,20 +16,23 @@ function(vl_default_options TARGET)
     endif()
 endfunction(vl_default_options)
 
-add_executable(vl
-    "compiler/main.c"
-    "compiler/lexer.h"
-    "compiler/lexer.c"
-    "compiler/list.h"
-    "compiler/list.c"
-)
 
-add_executable(vlvm
-    "vm/main.c"
-    "vm/vm.h"
-    "vm/vm.c"
-    "vm/ops.h"
+add_library(
+    vl_lib STATIC
+    "lib/vl/common/vl_list.h"    
+    "lib/vl/common/vl_list.c"
+    "lib/vl/compiler/lexer.h"    
+    "lib/vl/compiler/lexer.c"    
+    "lib/vl/vm/ops.h"    
+    "lib/vl/vm/vm.h"
+    "lib/vl/vm/vm.c"    
 )
+target_include_directories(vl_lib PUBLIC "lib/")
+vl_default_options(vl_lib)
 
-vl_default_options(vl)
-vl_default_options(vlvm)
+add_executable(
+    vl
+    "main.c"
+)
+vl_default_options(vl_lib)
+target_link_libraries(vl PUBLIC vl_lib)

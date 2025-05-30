@@ -1,4 +1,4 @@
-#include "list.h"
+#include "vl_list.h"
 
 void vl_list_grow(void** data, size_t* capacity, size_t length, size_t element_size)
 {

@@ -1,6 +1,6 @@
 #include "lexer.h"
-#include "list.h"
 #include <stdio.h>
+#include <vl/common/vl_list.h>
 
 void vl_lex_init(vl_lexer_t* l, const char* source_file, const char* source, size_t source_length)
 {
