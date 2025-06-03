@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vl/common/vl_list.h>
+#include <vl/vm/disassembler.h>
 #include <vl/vm/vm.h>
 
 static void usage(const char* program_name)
@@ -15,6 +17,7 @@ static void usage(const char* program_name)
     fprintf(stderr, "    compile <script> [output] - compile script to bytecode\n");
     fprintf(stderr, "    run <script>              - run script\n");
     fprintf(stderr, "    run-bytecode <bytecode>   - run bytecode binary file\n");
+    fprintf(stderr, "    disasm <bytecode>         - disassemble bytecode binary file\n");
     fprintf(stderr, "    help                      - show this message\n");
     fprintf(stderr, "\n");
 }
@@ -29,23 +32,25 @@ static const char* shift_args(int* argc, char*** argv)
     return arg;
 }
 
-static bool read_all_file(const char* path, uint8_t** data, size_t* data_size)
+static Vl_ByteArray read_all_file(const char* path)
 {
     FILE* file = fopen(path, "rb");
 
+    Vl_ByteArray result = { 0 };
     if (file == NULL) {
-        return false;
+        return (Vl_ByteArray) { 0 };
     }
 
     fseek(file, 0, SEEK_END);
-    *data_size = ftell(file);
-    *data = (uint8_t*)malloc(*data_size);
+    result.length = ftell(file);
+    result.capacity = result.length;
+    result.items = (uint8_t*)malloc(result.capacity);
     fseek(file, 0, SEEK_SET);
 
-    fread(*data, *data_size, 1, file);
+    fread(result.items, result.capacity, 1, file);
     fclose(file);
 
-    return true;
+    return result;
 }
 
 static void compile_script(const char* script, const char* output_file)
@@ -60,25 +65,38 @@ static void run_script(const char* script)
     assert(0 && "TODO: not implemented");
 }
 
+static void disassemble_bytecode(const char* bytecode_file)
+{
+
+    Vl_ByteArray bytecode = read_all_file(bytecode_file);
+    if (bytecode.items == NULL) {
+        fprintf(stderr, "ERROR: failed to read file %s: %s\n", bytecode_file, strerror(errno));
+        exit(1);
+    }
+    fprintf(stderr, "INFO: disassembling bytecode '%s'\n", bytecode_file);
+    vl_disassemble_bytecode(stdout, bytecode);
+    vl_list_free(&bytecode);
+}
+
 static void run_bytecode(const char* bytecode_file)
 {
     fprintf(stderr, "INFO: running bytecode '%s'\n", bytecode_file);
-
-    uint8_t* bytecode = NULL;
-    size_t bytecode_size = 0;
-
-    if (!read_all_file(bytecode_file, &bytecode, &bytecode_size)) {
+    // TODO: come up with a magic header to distinguish bytecode
+    // format from other binary files and check it when
+    // reading the file.
+    Vl_ByteArray bytecode = read_all_file(bytecode_file);
+    if (bytecode.items == NULL) {
         fprintf(stderr, "ERROR: failed to read file %s: %s\n", bytecode_file, strerror(errno));
+        exit(1);
     }
 
     Vl_Vm vm = { 0 };
 
-    vl_vm_load_bytecode(&vm, bytecode, bytecode_size);
+    vl_vm_load_bytecode(&vm, bytecode.items, bytecode.length);
     if (!vl_vm_execute(&vm)) {
         exit(1);
     }
-
-    free(bytecode);
+    vl_list_free(&bytecode);
 }
 
 int main(int argc, char** argv)
@@ -128,6 +146,15 @@ int main(int argc, char** argv)
         }
         const char* bytecode_file = shift_args(&argc, &argv);
         run_bytecode(bytecode_file);
+
+    } else if (strcmp(subcommand, "disasm") == 0) {
+        if (!argc) {
+            usage(program);
+            fprintf(stderr, "ERROR: no file was provided\n");
+            return 1;
+        }
+        const char* bytecode_file = shift_args(&argc, &argv);
+        disassemble_bytecode(bytecode_file);
 
     } else if (strcmp(subcommand, "help") == 0) {
         usage(program);

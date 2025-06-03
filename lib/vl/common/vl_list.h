@@ -2,6 +2,7 @@
 #define VL_LIST_H_
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #define vl_list_append(list, item)                                                                       \
@@ -19,5 +20,11 @@
     } while (0)
 
 void vl_list_grow(void** data, size_t* capacity, size_t length, size_t element_size);
+
+typedef struct Vl_ByteArray {
+    uint8_t* items;
+    size_t length;
+    size_t capacity;
+} Vl_ByteArray;
 
 #endif // VL_LIST_H_

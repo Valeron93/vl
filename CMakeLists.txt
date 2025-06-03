@@ -26,6 +26,8 @@ add_library(
     "lib/vl/vm/ops.h"    
     "lib/vl/vm/vm.h"
     "lib/vl/vm/vm.c"    
+    "lib/vl/vm/disassembler.h"
+    "lib/vl/vm/disassembler.c"
 )
 target_include_directories(vl_lib PUBLIC "lib/")
 vl_default_options(vl_lib)
